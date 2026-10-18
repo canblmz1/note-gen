@@ -1,0 +1,31 @@
+name: Manual AgentRuntime boundary trial
+on:
+  workflow_dispatch:
+    inputs:
+      trial_ref:
+        description: Reviewed test branch commit SHA
+        required: true
+        type: string
+permissions:
+  contents: read
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@08eba0b27e820071cde6df949e0beb9ba4906955
+        with:
+          ref: ${{ inputs.trial_ref }}
+          persist-credentials: false
+      - uses: pnpm/action-setup@v6
+        with:
+          version: 9
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 24
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile --ignore-scripts
+      - run: pnpm test:agent-boundary
+      - run: pnpm plugin-api:check-version
+      - name: Existing native helper tests
+        run: node --test src/lib/vector-document-key.spec.mjs src/app/core/main/mark/mark-view-mode.spec.mjs src/app/core/main/file/folder-item/paste-target.spec.mjs
