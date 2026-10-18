@@ -17,6 +17,12 @@ jobs:
         with:
           ref: ${{ inputs.trial_ref }}
           persist-credentials: false
+      - name: Verify reviewed source
+        env:
+          TRIAL_SHA: ${{ inputs.trial_ref }}
+        run: |
+          git rev-parse HEAD
+          test "$(git rev-parse HEAD)" = "$TRIAL_SHA"
       - uses: pnpm/action-setup@v6
         with:
           version: 9
